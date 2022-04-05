@@ -1,2 +1,2 @@
 # Schrodinger3DFDM
-Julia code that solves the 3-dimensional Schrodinger Equation using Finite Differences Method.
+Julia code that solves the 3-dimensional Schrodinger Equation using Finite Difference Method.
