@@ -1,4 +1,3 @@
-using Trapz
 include("drive.jl")
 
 function solve(ψ, t)

@@ -1,5 +1,4 @@
 using LinearAlgebra
-using Interpolations
 using Plots
 
 # Nx = Ny = Nz = 32 # no of grid points
@@ -19,7 +18,7 @@ z = -Nz/2+1:Nz/2 |> collect |> k -> (k*Lz/Nz)
 const δx = Lx/Nx
 const δy = Ly/Ny
 const δz = Lz/Nz
-const Nlin = 0 # Non-linearity constant
+Nlin = 0 # Non-linearity constant
 
 V = zeros(ComplexF32, Nx, Ny, Nz)
 for k1=1:Nx, k2=1:Ny, k3=1:Nz
