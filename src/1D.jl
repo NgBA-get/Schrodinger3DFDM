@@ -1,10 +1,15 @@
 using LinearAlgebra
 using Interpolations
+using Plots
 
-Nx = Ny = Nz = 32 # no of grid points
-t = 10 # running time
+# Nx = Ny = Nz = 32 # no of grid points
+Nx = 32
+Ny = 32
+Nz = 32
+
+t = 5 # running time
 steps = 10000
-Δt = (t-1)/steps
+Δt = t/steps
 Lx = Ly = Lz = 1
 
 x = -Nx/2+1:Nx/2 |> collect |> k -> (k*Lx/Nx)
@@ -16,41 +21,26 @@ const δy = Ly/Ny
 const δz = Lz/Nz
 const Nlin = 0 # Non-linearity constant
 
-# (x, y, z) are grid points, not actual euclidean space coordinates.
-
-function V(x...)
-    """
-    Function representing velocity potential.
-    Calculates the potential for at a point in Rⁿ space.
-    """
-    return 64/2*mapreduce(k->k^2, +, x)
+V = zeros(ComplexF32, Nx, Ny, Nz)
+for k1=1:Nx, k2=1:Ny, k3=1:Nz
+    V[k1, k2, k3] = 32 * (x[k1]^2 + y[k2]^2 + z[k3]^2)
 end
 
 # ψ(x, y, z, t); for now ψ(x, t)
 
-function ∇²(f, x, y, z, t)
-    """
-    Calculates the Laplacian of the function `f = f(x, y, z, t)`. 
-    
-    Arguments:
-        f: function of which we need the Laplacian
-        x: grid point in x-direction
-        y: grid point in y-direction
-        z: grid point in z-direction
-        t: time coordinate
-    """
-    dx = (f(x+1, y, z, t) - 2f(x, y, z, t) + f(x-1, y, z ,t)) / δx^2
-    dy = (f(x, y+1, z, t) - 2f(x, y, z, t) + f(x, y-1, z ,t)) / δy^2
-    dz = (f(x, y, z+1, t) - 2f(x, y, z, t) + f(x, y, z-1 ,t)) / δz^2
-    
-    return dx+dy+dz
+function ∇²(f, t)
+    f₀ = f(:, :, :, t)
+    f₀[2:Nx-1, :, :] = (f(3:Nx, :, :, t) - 2f(2:Nx-1, :, :, t) + f(1:Nx-2, :, : , t)) / δx^2
+    f₀[:, 2:Ny-1, :] += (f(:, 3:Ny, :, t) - 2f(:, 2:Ny-1, :, t) + f(:, 1:Ny-2, :, t)) / δy^2
+    f₀[:, :, 2:Nz-1] += (f(:, :, 3:Nz, t) - 2f(:, :, 2:Nz-1, t) + f(:, :, 1:Nz-2,t)) / δz^2
+    return f₀
 end
 
-function ∂ψ_∂t(ψ, V, x, y, z, t)
+function ∂ψ_∂t(ψ, t)
     """
     Function which outputs the time-derivative of ψ at coordinates `(x, y, z)` at time `t`.
     """
-    return (-1/128 * ∇²(ψ, x, y, z, t) + 
-            V(x, y, z, t) * ψ(x, y, z, t) +
-            Nlin * norm(ψ(x, y, z, t)) * ψ(x, y, z, t)) * -1im
+    ψ₁ = ψ(:, :, :, t)
+    return (-1/128 * ∇²(ψ, t) + 
+            (V + Nlin * norm.(ψ₁)) .* ψ₁) * -1im
 end

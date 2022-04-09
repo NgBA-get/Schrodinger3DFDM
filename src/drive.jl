@@ -13,12 +13,10 @@ for idx in CartesianIndices(ϕ[:, :, :, 1])
     ϕ[idx.I..., 1] = gauss_3d(x[xx], y[yy], z[zz])
 end
 # 3D gaussian initialization done.
-# Was planning to use Interpolations.jl, but it doesn't support interpolation of Complex Arrays.
 
 ψ(x, y, z, t) = ϕ[x, y, z, t] # To keep up consistency with the rest of the codebase.
 
-function ψ_set(val, x, y, z, t)
-    # inplace function to set the value of a particular index of ϕ
-    ϕ[x, y, z, t] = val
+function ψ_set(val, t)
+    ϕ[:, :, :, t] = val
     return nothing
 end

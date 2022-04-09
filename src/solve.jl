@@ -1,24 +1,15 @@
+using Trapz
 include("drive.jl")
 
-function solve(ψ, cdts, t)
-    """
-    cdts::CartesianIndices : set of all coordinates we want to solve for.
-    Solves for time instance `t`.
-    """
-    for cd in cdts
-        k₁ = Δt * ∂ψ_∂t(ψ, V, cd.I..., t)
-        k₂ = Δt * (∂ψ_∂t(ψ, V, cd.I..., t) + k₁/2)
-        ψ_set(ψ(cd.I..., t) + k₂, cd.I..., t+1)
-    end
+function solve(ψ, t)
+    ψ₀ = ∂ψ_∂t(ψ, t)
+    ψ_set(ψ₀*(1 + Δt + (Δt^2)/2), t+1)
 end
 
-function solveAll(ψ, cdts)
-    tst = 1:steps |> collect
-    for ts in tst
-        solve(ψ, cdts, ts)
+function solveAll(ψ)
+    for ts in 1:steps
+        solve(ψ, ts)
         println("Solved for timestep=$(ts * Δt)")
     end
     return nothing
 end
-
-# Values are exploding
