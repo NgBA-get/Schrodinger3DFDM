@@ -1,5 +1,5 @@
 using LinearAlgebra
-using Plots
+using BenchmarkTools
 
 # Nx = Ny = Nz = 32 # no of grid points
 Nx = 32
@@ -15,6 +15,10 @@ x = -Nx/2+1:Nx/2 |> collect |> k -> (k*Lx/Nx)
 y = -Ny/2+1:Ny/2 |> collect |> k -> (k*Ly/Ny)
 z = -Nz/2+1:Nz/2 |> collect |> k -> (k*Lz/Nz)
 
+xg = reshape(x, Nx, 1, 1) .* ones(Nx, Ny, Nz)
+yg = reshape(y, 1, Ny, 1) .* ones(Nx, Ny, Nz)
+zg = reshape(z, 1, 1, Nz) .* ones(Nx, Ny, Nz)
+
 const δx = Lx/Nx
 const δy = Ly/Ny
 const δz = Lz/Nz
@@ -27,19 +31,19 @@ end
 
 # ψ(x, y, z, t); for now ψ(x, t)
 
-function ∇²(f, t)
-    f₀ = f(:, :, :, t)
-    f₀[2:Nx-1, :, :] = (f(3:Nx, :, :, t) - 2f(2:Nx-1, :, :, t) + f(1:Nx-2, :, : , t)) / δx^2
-    f₀[:, 2:Ny-1, :] += (f(:, 3:Ny, :, t) - 2f(:, 2:Ny-1, :, t) + f(:, 1:Ny-2, :, t)) / δy^2
-    f₀[:, :, 2:Nz-1] += (f(:, :, 3:Nz, t) - 2f(:, :, 2:Nz-1, t) + f(:, :, 1:Nz-2,t)) / δz^2
+function ∇²(f)
+    f₀ = f
+    f₀[2:Nx-1, :, :] = (f[3:Nx, :, :] - 2f[2:Nx-1, :, :] + f[1:Nx-2, :, :]) / δx^2
+    f₀[:, 2:Ny-1, :] += (f[:, 3:Ny, :] - 2f[:, 2:Ny-1, :] + f[:, 1:Ny-2, :]) / δy^2
+    f₀[:, :, 2:Nz-1] += (f[:, :, 3:Nz] - 2f[:, :, 2:Nz-1] + f[:, :, 1:Nz-2]) / δz^2
     return f₀
 end
 
-function ∂ψ_∂t(ψ, t)
+function ∂ψ_∂t(ψ)
     """
     Function which outputs the time-derivative of ψ at coordinates `(x, y, z)` at time `t`.
     """
-    ψ₁ = ψ(:, :, :, t)
-    return (-1/128 * ∇²(ψ, t) + 
+    ψ₁ = ψ
+    return (-1/128 * ∇²(ψ) + 
             (V + Nlin * norm.(ψ₁)) .* ψ₁) * -1im
 end
