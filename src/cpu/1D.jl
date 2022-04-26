@@ -1,10 +1,7 @@
 using LinearAlgebra
 using BenchmarkTools
 
-# Nx = Ny = Nz = 32 # no of grid points
-Nx = 32
-Ny = 32
-Nz = 32
+Nx = Ny = Nz = 64 # no of grid points
 
 t = 5 # running time
 steps = 10000

@@ -1,5 +1,6 @@
 using LinearAlgebra
 using BenchmarkTools
+using CUDA
 
 # Nx = Ny = Nz = 32 # no of grid points
 Nx = 32
@@ -15,9 +16,9 @@ x = -Nx/2+1:Nx/2 |> collect |> k -> (k*Lx/Nx)
 y = -Ny/2+1:Ny/2 |> collect |> k -> (k*Ly/Ny)
 z = -Nz/2+1:Nz/2 |> collect |> k -> (k*Lz/Nz)
 
-xg = reshape(x, Nx, 1, 1) .* ones(Nx, Ny, Nz)
-yg = reshape(y, 1, Ny, 1) .* ones(Nx, Ny, Nz)
-zg = reshape(z, 1, 1, Nz) .* ones(Nx, Ny, Nz)
+xg = reshape(x, Nx, 1, 1) .* ones(Nx, Ny, Nz) |> CuArray
+yg = reshape(y, 1, Ny, 1) .* ones(Nx, Ny, Nz) |> CuArray
+zg = reshape(z, 1, 1, Nz) .* ones(Nx, Ny, Nz) |> CuArray
 
 const δx = Lx/Nx
 const δy = Ly/Ny
@@ -29,7 +30,8 @@ for k1=1:Nx, k2=1:Ny, k3=1:Nz
     V[k1, k2, k3] = 32 * (x[k1]^2 + y[k2]^2 + z[k3]^2)
 end
 
-# ψ(x, y, z, t); for now ψ(x, t)
+V = V |> CuArray
+# All operations converted to CUDA Arrays. Code is CUDA agnostic now.
 
 function ∇²(f)
     f₀ = f

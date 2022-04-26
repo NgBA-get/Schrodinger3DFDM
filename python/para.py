@@ -3,9 +3,10 @@ import numpy as np
 For 2D set Nx,Nz for grids and Lx, Lz for box size along the respective direction 
 '''
 # No of grids points along the different direction 
-Nx = 32
-Ny = 32
-Nz = 32
+N1 = 64
+Nx = N1
+Ny = N1
+Nz = N1
 
 # Box size along the different directions 
 Lx=1
